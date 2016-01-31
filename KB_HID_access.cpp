@@ -66,6 +66,9 @@ void kb_device_close(GKeyboardDevice* kbdevice)
 	/* release the interface */
 	libusb_release_interface(kbdevice->device->device_handle, kbdevice->device->interface);
 	
+	//return device to the kernel
+	libusb_attach_kernel_driver(kbdevice->device->device_handle, kbdevice->device->interface);
+
 	/* Close the handle */
 	libusb_close(kbdevice->device->device_handle);
 	
@@ -77,6 +80,7 @@ void kb_device_close(GKeyboardDevice* kbdevice)
 	libusb_exit(NULL);
 
 	std::cout << "Device stopped." << std::endl;
+	std::cout << "Device returned to kernel, keyboard functionality restored." << std::endl;
 }
 
 //check if device handles are ok

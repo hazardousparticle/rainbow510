@@ -75,3 +75,19 @@ void Color::operator=(const Color& c)
 	this->blue = c.blue;
 	this->green = c.green;
 }
+
+HsvColor::HsvColor(unsigned char hue, unsigned char sat, unsigned char var)
+{
+	this->h = hue;
+	this->s = sat;
+	this->v = var;
+}
+
+HsvColor::HsvColor()
+{
+	this->h=0;
+	this->s=0xff;
+	this->v=0xff;
+}
+
+

@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 
 	signal(SIGINT, signal_handler);
 
+	cout << "WARNING: device will not work as keyboard while the program is running" << endl;
 
 	if (NotValidHandle(dev_handle))//check if g510 found
 	{
@@ -128,12 +129,7 @@ int main(int argc, char* argv[])
 		//no args, do rainbow loop until ctrl+c
 
 		Color rainbow = Color();
-
-
-		HsvColor hsv;
-		hsv.s = (unsigned char)0xff;
-		hsv.v = (unsigned char)0xff;
-		hsv.h = (unsigned char)0;
+		HsvColor hsv = HsvColor();
 
 		while (!PissOff_signal)
 		{
@@ -167,6 +163,5 @@ int main(int argc, char* argv[])
 static void signal_handler(int signum)
 {
 	cout << "Closing the program..." << endl;
-
 	PissOff_signal = true;
 }

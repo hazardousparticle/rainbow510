@@ -3,13 +3,19 @@
 #define COLOR_H_
 
 //somewhere to store a HSV color
-typedef struct
+class HsvColor
 {
+private:
+
+public:
+	HsvColor(unsigned char hue, unsigned char sat, unsigned char var); //set all
+	//HsvColor(unsigned char hue); //assume s and v = 255
+	HsvColor(); //assume h=0, s=v=255
+
 	unsigned char h;
 	unsigned char s;
 	unsigned char v;
-
-} HsvColor;
+};
 
 //somewhere to store an RGB color and make conversions
 class Color

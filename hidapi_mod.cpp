@@ -163,7 +163,7 @@ HANDLE open_device_handle(std::string path)
 
 	libusb_device **devs;
 	libusb_device *usb_dev;
-	ssize_t num_devs;
+	//ssize_t num_devs;
 	int res;
 	int d = 0;
 	
@@ -174,7 +174,7 @@ HANDLE open_device_handle(std::string path)
 	//if (!initialized)
 		//hid_init();
 
-	num_devs = libusb_get_device_list(NULL, &devs);
+	/*num_devs = */libusb_get_device_list(NULL, &devs);
 	while ((usb_dev = devs[d++]) != NULL && !device_found) {
 		libusb_device_descriptor desc;
 		libusb_config_descriptor *conf_desc = NULL;
@@ -202,10 +202,11 @@ HANDLE open_device_handle(std::string path)
 					
 						/* Detach the kernel driver, but only if the
 						   device is managed by the kernel */
-						/*TODO: figure out how to open device without detaching kernel,
+						/*TODO: figure out how to open device without detaching kernel or make a wrapper for rainbow feature\
+						 *
 						 * need kernel attached to use as keyboard
 						 */
-#if 1
+
 						if (libusb_kernel_driver_active(dev->device_handle, intf_desc->bInterfaceNumber) == 1) {
 							res = libusb_detach_kernel_driver(dev->device_handle, intf_desc->bInterfaceNumber);
 							if (res < 0) {
@@ -215,7 +216,7 @@ HANDLE open_device_handle(std::string path)
 								break;
 							}
 						}
-#endif
+
 						res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
 						if (res < 0) {
 							//LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
