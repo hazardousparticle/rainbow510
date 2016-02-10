@@ -78,9 +78,6 @@ void kb_device_close(GKeyboardDevice* kbdevice)
 	delete kbdevice;
 	
 	libusb_exit(NULL);
-
-	std::cout << "Device stopped." << std::endl;
-	std::cout << "Device returned to kernel, keyboard functionality restored." << std::endl;
 }
 
 //check if device handles are ok
@@ -100,21 +97,3 @@ bool NotValidHandle(HANDLE h)
 	return !retval; //returns true if bad, false if good
 }
 
-
-/*
-auto NotValidHandle = [] (HANDLE h) -> bool
-{
-	bool retval = false;
-
-	//not null pointer check
-	retval = (h != nullptr && h != NULL);
-
-	if (retval)
-	{
-		//check libusb handle is non zero
-		retval = (h->device_handle != 0);
-	}
-
-	return !retval; //returns true if bad, false if good
-};
-*/

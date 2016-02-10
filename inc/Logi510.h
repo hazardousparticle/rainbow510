@@ -25,7 +25,8 @@
 #define USB_TRANSFER_REQUEST_SET 0x09
 #define USB_TRANSFER_VALUE 0x0305
 #define USB_TRANSFER_INDEX 0x01
-
+//time out for libusb control tansfers (ms)
+#define LIBUSB_TRANSFER_TIMEOUT 200
 
 
 //includes
@@ -36,14 +37,8 @@
 void setL510_LEDColor(GKeyboardDevice* dev, Color *c);
 Color* getL510_LEDColor(GKeyboardDevice* dev);
 
-//HANDLE kb_device_open();
 GKeyboardDevice*  kb_device_open(unsigned short vendor_id, unsigned short product_id);
 void kb_device_close(GKeyboardDevice* kbdevice);
 
-//bool NotValidHandle(HANDLE h); //now a lamda
-
-
-//time out for libusb control tansfers (ms)
-#define LIBUSB_TRANSFER_TIMEOUT 200
-
 #endif
+

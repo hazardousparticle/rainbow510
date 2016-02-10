@@ -16,12 +16,6 @@ using namespace std;
 //delay in ms between color cycles
 #define SPEED 100
 
-
-volatile bool PissOff_signal = false;
-
-static void signal_handler(int signum);
-
-
 int main(int argc, char* argv[])
 {
 	//HANDLE dev_handle = kb_device_open(LOGI_510_VID, LOGI_510_PID);
@@ -29,10 +23,6 @@ int main(int argc, char* argv[])
 	GKeyboardDevice *KBDev = kb_device_open(DEVICE_G510_VID, DEVICE_G510_PID);
 
 	HANDLE dev_handle = KBDev->device;
-
-	signal(SIGINT, signal_handler);
-
-	cout << "WARNING: device will not work as keyboard while the program is running" << endl;
 
 	if (NotValidHandle(dev_handle))//check if g510 found
 	{
@@ -58,20 +48,15 @@ int main(int argc, char* argv[])
 		{
 			cout << "TODO: modify LOGI_510_COLOR_CHANGE_CMD according to G110" << endl;
 			cout << "G110 device found but not supported" << endl;
+			
+			delete dev_handle;
+		    delete KBDev;
+			
 			return 0;
 		}
 	}
 
-	//read command
-	if (argc == 2 && !strncmp(argv[1], "read", 4))
-	{
-		//print color and exit
-		//tell loop not to run
-
-		PissOff_signal = true;
-	}
-
-	//no options means rainbow mode
+	//no options means read color
 
 	Color *c = getL510_LEDColor(KBDev);
 
@@ -123,10 +108,22 @@ int main(int argc, char* argv[])
 		setL510_LEDColor(KBDev, c);
 		printf("Set LED color: red=%02X, green=%02X, blue=%02X\r\n", r, g, b);
 	}
-
-	if (argc ==1 )
+	else if (argc == 2 && !strncmp(argv[1], "rainbow", 7) )
 	{
-		//no args, do rainbow loop until ctrl+c
+		//do rainbow loop until ctrl+c
+		
+		//quit signal
+		
+        bool PissOff_signal = false;
+		
+		auto signal_handler = [](int signal)
+		{
+		    cout << "Closing the program..." << endl;
+	        PissOff_signal = true;
+		}
+		
+		signal(SIGINT, signal_handler);
+		signal(SIGHUP, signal_handler);
 
 		Color rainbow = Color();
 		HsvColor hsv = HsvColor();
@@ -146,7 +143,6 @@ int main(int argc, char* argv[])
 			usleep(SPEED * 1000);
 		}
 
-		cout << "Setting color to its original" << endl;
 		setL510_LEDColor(KBDev, c);
 	}
 
@@ -159,9 +155,3 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-//capture signals
-static void signal_handler(int signum)
-{
-	cout << "Closing the program..." << endl;
-	PissOff_signal = true;
-}
