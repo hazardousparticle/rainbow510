@@ -1,0 +1,2 @@
+#logitech g510 user access udev rule
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c22d", GROUP="users", MODE="0666"

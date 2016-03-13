@@ -24,37 +24,28 @@
 
 #include "hidapi_mod.h"
 
-bool initialized = false;
-static std::string make_path(libusb_device *dev, int interface_number);
-
-hid_device_info *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
+GKeyboardDevice *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-	libusb_device **devs;
+	//the root device, return object
+	GKeyboardDevice* kbdevice = NULL;
+	GKeyboardDevice* tmpdev = NULL;
+
+	libusb_device **dev_list;
 	libusb_device *dev;
 	//libusb_device_handle *handle;
 	ssize_t num_devs;
 	int i = 0;
-	
-	hid_device_info *root = NULL; // return object
-	hid_device_info *cur_dev = NULL;
-	
-	//setlocale(LC_ALL,"");
-	
-	//if (!initialized)
-		//hid_init();
 
-	num_devs = libusb_get_device_list(NULL, &devs);
+	num_devs = libusb_get_device_list(NULL, &dev_list);
 	if (num_devs < 0)
 		return NULL;
-	while ((dev = devs[i++]) != NULL) {
+	while ((dev = dev_list[i++]) != NULL) {
 		struct libusb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int j, k;
-		int interface_num = 0;
 
 		int res = libusb_get_device_descriptor(dev, &desc);
-		unsigned short dev_vid = desc.idVendor;
-		unsigned short dev_pid = desc.idProduct;
+
 		
 		/* HID's are defined at the interface level. */
 		if (desc.bDeviceClass != LIBUSB_CLASS_PER_INTERFACE)
@@ -70,43 +61,19 @@ hid_device_info *hid_enumerate(unsigned short vendor_id, unsigned short product_
 					const libusb_interface_descriptor *intf_desc;
 					intf_desc = &intf->altsetting[k];
 					if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID) {
-						interface_num = intf_desc->bInterfaceNumber;
 
 						/* Check the VID/PID against the arguments */
-						if (vendor_id == dev_vid && product_id == dev_pid) {
-							hid_device_info *tmp;
-
-							/* VID/PID match. Create the record. */
-							tmp = new hid_device_info();
-							if (cur_dev) {
-								cur_dev->next = tmp;
-							}
-							else {
-								root = tmp;
-							}
-							cur_dev = tmp;
+						if (vendor_id == desc.idVendor && product_id == desc.idProduct) {
 							
-							/* Fill out the record */
-							cur_dev->next = NULL;
-							cur_dev->path = make_path(dev, interface_num);
-							
-							/*
-							res = libusb_open(dev, &handle);
+							//found a device, add it to the list
+							tmpdev = kbdevice;
+							kbdevice = new GKeyboardDevice();
 
-							if (res >= 0) {
-                                //Serial Number
-								if (desc.iSerialNumber > 0)
-									cur_dev->serial_number =
-										get_usb_string(handle, desc.iSerialNumber);
-
-								libusb_close(handle);
-							}*/
-							/* VID/PID */
-							cur_dev->vendor_id = dev_vid;
-							cur_dev->product_id = dev_pid;
-						
-							/* Interface Number */
-							cur_dev->interface_number = interface_num;
+							kbdevice->vendor_id = desc.idVendor;
+							kbdevice->product_id = desc.idProduct;
+							kbdevice->usb_dev = dev;
+							kbdevice->interface = intf_desc->bInterfaceNumber;
+							kbdevice->next = tmpdev;
 						}
 					}
 				} /* altsettings */
@@ -115,170 +82,18 @@ hid_device_info *hid_enumerate(unsigned short vendor_id, unsigned short product_
 		}
 	}
 
-	libusb_free_device_list(devs, 1);
+	libusb_free_device_list(dev_list, 1);
 
-	return root;
+	return kbdevice;
 }
 
-void hid_free_enumeration(hid_device_info *devs)
+void hid_free_enumeration(GKeyboardDevice *devs)
 {
-	hid_device_info *d = devs;
+	GKeyboardDevice *d = devs;
 	while (d) {
-		hid_device_info *next = d->next;
-		//free(d);
+		GKeyboardDevice *next = d->next;
+
 		delete d;
 		d = next;
 	}
-}
-
-
-
-static std::string make_path(libusb_device *dev, int interface_number)
-{
-	char str[64];
-	snprintf(str, sizeof(str), "%04x:%04x:%02x",
-		libusb_get_bus_number(dev),
-		libusb_get_device_address(dev),
-		interface_number);
-	str[sizeof(str)-1] = '\0';
-	
-	std::string s = str;
-
-	return s;
-}
-
-
-//opens devices from string path
-HANDLE open_device_handle(std::string path)
-{
-	//TODO: cleanup open device routine
-
-	if (path == "" || path.length() < 1)
-	{
-		//bad path to device
-		return NULL;
-	}
-
-	HANDLE dev = new hid_device();//NULL;
-
-	libusb_device **devs;
-	libusb_device *usb_dev;
-	//ssize_t num_devs;
-	int res;
-	int d = 0;
-	
-	bool device_found = false;
-
-	//setlocale(LC_ALL,"");
-	
-	//if (!initialized)
-		//hid_init();
-
-	/*num_devs = */libusb_get_device_list(NULL, &devs);
-	while ((usb_dev = devs[d++]) != NULL && !device_found) {
-		libusb_device_descriptor desc;
-		libusb_config_descriptor *conf_desc = NULL;
-		int i,j,k;
-		libusb_get_device_descriptor(usb_dev, &desc);
-
-		if (libusb_get_active_config_descriptor(usb_dev, &conf_desc) < 0)
-			continue;
-		for (j = 0; j < conf_desc->bNumInterfaces; j++) {
-			const libusb_interface *intf = &conf_desc->interface[j];
-			for (k = 0; k < intf->num_altsetting; k++) {
-				const libusb_interface_descriptor *intf_desc;
-				intf_desc = &intf->altsetting[k];
-				if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID) {
-					std::string dev_path = make_path(usb_dev, intf_desc->bInterfaceNumber);
-					if (dev_path == path) {
-						/* Matched Paths. Open this device */
-						device_found = true;
-						// OPEN HERE //
-						res = libusb_open(usb_dev, &dev->device_handle);
-						if (res < 0) {
-							//free(dev_path);
- 							break;
-						}
-					
-						/* Detach the kernel driver, but only if the
-						   device is managed by the kernel */
-						/*TODO: figure out how to open device without detaching kernel or make a wrapper for rainbow feature\
-						 *
-						 * need kernel attached to use as keyboard
-						 */
-
-						if (libusb_kernel_driver_active(dev->device_handle, intf_desc->bInterfaceNumber) == 1) {
-							res = libusb_detach_kernel_driver(dev->device_handle, intf_desc->bInterfaceNumber);
-							if (res < 0) {
-								libusb_close(dev->device_handle);
-								//LOG("Unable to detach Kernel Driver\n");
-								//free(dev_path);
-								break;
-							}
-						}
-
-						res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
-						if (res < 0) {
-							//LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
-							//free(dev_path);
-							libusb_close(dev->device_handle);
-							break;
-						}
-
-						/* Store off the string descriptor indexes */
-						//dev->serial_index       = desc.iSerialNumber;
-
-						/* Store off the interface number */
-						dev->interface = intf_desc->bInterfaceNumber;
-												
-						/* Find the INPUT and OUTPUT endpoints. An
-						   OUTPUT endpoint is not required. */
-						for (i = 0; i < intf_desc->bNumEndpoints; i++) {
-							const struct libusb_endpoint_descriptor *ep
-								= &intf_desc->endpoint[i];
-
-							/* Determine the type and direction of this
-							   endpoint. */
-							int is_interrupt =
-								(ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
-							      == LIBUSB_TRANSFER_TYPE_INTERRUPT;
-							int is_output = 
-								(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
-							      == LIBUSB_ENDPOINT_OUT;
-							int is_input = 
-								(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
-							      == LIBUSB_ENDPOINT_IN;
-
-							/* Decide whether to use it for input or output. */
-							if (dev->input_endpoint == 0 &&
-							    is_interrupt && is_input) {
-								/* Use this endpoint for INPUT */
-								dev->input_endpoint = ep->bEndpointAddress;
-								dev->input_ep_max_packet_size = ep->wMaxPacketSize;
-							}
-							if (dev->output_endpoint == 0 &&
-							    is_interrupt && is_output) {
-								/* Use this endpoint for OUTPUT */
-								dev->output_endpoint = ep->bEndpointAddress;
-							}
-						}
-					}
-				}
-			}
-		}
-		libusb_free_config_descriptor(conf_desc);
-
-	}
-
-	libusb_free_device_list(devs, 1);
-	
-	// If we have a good handle, return it.
-	
-	if (NotValidHandle(dev))
-	{
-	    delete dev;
-	    dev = NULL;
-//	    return NULL;
-	}
-	return dev;
 }

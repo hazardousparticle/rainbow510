@@ -14,7 +14,7 @@
 using namespace std;
 
 //delay in ms between color cycles
-#define SPEED 100
+#define SPEED 250
 
 volatile bool PissOff_signal = true;
 //will skip loop unless told not to
@@ -27,13 +27,13 @@ void signal_handler(int signum)
 
 int main(int argc, char* argv[])
 {
-    //HANDLE dev_handle = kb_device_open(LOGI_510_VID, LOGI_510_PID);
+	libusb_init(NULL);
 
-    GKeyboardDevice *KBDev = kb_device_open(DEVICE_G510_VID, DEVICE_G510_PID);
+	GKeyboardDevice *devs = hid_enumerate(DEVICE_G510_VID, DEVICE_G510_PID);
 
-    HANDLE dev_handle = KBDev->device;
+    GKeyboardDevice *devToUse = kb_device_open(devs, 0); //use the first device
 
-    if (NotValidHandle(dev_handle))//check if g510 found
+    if (NotValidHandle(devToUse))//check if g510 found
     {
         cout << "Error accessing G510 keyboard." << endl;
 
@@ -41,13 +41,18 @@ int main(int argc, char* argv[])
 
         //get pointers ready to reassign
 
-        delete dev_handle;
-        delete KBDev;
+        //delete devToUse;
+        hid_free_enumeration(devs);
+
 
         //if not check for a g110
-        KBDev = kb_device_open(DEVICE_G510_VID, DEVICE_G110_PID);
-        dev_handle = KBDev->device;
-        if (NotValidHandle(dev_handle))
+
+        devs = hid_enumerate(DEVICE_G110_VID, DEVICE_G110_PID);
+
+        devToUse = kb_device_open(devs, 0); //use the first device
+
+
+        if (NotValidHandle(devToUse))
         {
             cout << "No G110 keyboard found." << endl;
 
@@ -56,18 +61,18 @@ int main(int argc, char* argv[])
         else
         {
             cout << "TODO: modify LOGI_510_COLOR_CHANGE_CMD according to G110" << endl;
-            cout << "G110 device found but not supported" << endl;
-            
-            delete dev_handle;
-            delete KBDev;
-            
-            return 0;
+				cout << "G110 device found but not supported" << endl;
+			hid_free_enumeration(devs);
+
+			devs = NULL;
+			return 0;
         }
+
     }
 
     //no options means read color
 
-    Color *c = getL510_LEDColor(KBDev);
+    Color *c = getL510_LEDColor(devToUse);
 
     unsigned char r = 0;
     unsigned char g = 0;
@@ -113,7 +118,7 @@ int main(int argc, char* argv[])
         delete c;
         c = new Color(r,g,b);
 
-        setL510_LEDColor(KBDev, c);
+        setL510_LEDColor(devToUse, c);
         printf("Set LED color: red=%02X, green=%02X, blue=%02X\r\n", r, g, b);
     }
     else if (argc == 2 && !strncmp(argv[1], "rainbow", 7) )
@@ -133,7 +138,7 @@ int main(int argc, char* argv[])
             //TODO: detect disconnection of the device
             rainbow = Color::RGBFromHSV(&hsv);
 
-            setL510_LEDColor(KBDev, &rainbow);
+            setL510_LEDColor(devToUse, &rainbow);
             hsv.h++;
             if (hsv.h >= 0xff)
             {
@@ -143,15 +148,14 @@ int main(int argc, char* argv[])
             usleep(SPEED * 1000);
         }
 
-        setL510_LEDColor(KBDev, c);
+        setL510_LEDColor(devToUse, c);
     }
 
     //free the pointers
-    kb_device_close(KBDev);
     delete c;
     c = nullptr;
-    dev_handle = NULL;
     
+    libusb_exit(NULL);
     return 0;
 }
 

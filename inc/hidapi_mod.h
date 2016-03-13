@@ -31,88 +31,32 @@
 
 #include <libusb-1.0/libusb.h>
 #include "iconv.h"
-
-
 #include <string>
 
-struct hid_device {
-	//TODO: remove unnecessary parameters
+struct GKeyboardDevice
+{
+	//the LIBUSB device handle
+	//HANDLE device;
 
 	/* Handle to the actual device. */
 	libusb_device_handle *device_handle;
-	
-	/* Endpoint information */
-	int input_endpoint;
-	int output_endpoint;
-	int input_ep_max_packet_size;
 
-	/* The interface number of the HID */	
+	//physical device
+	libusb_device *usb_dev;
+
+
+	//interface of the usb device
 	int interface;
-	
-	/* Indexes of Strings */
-	int manufacturer_index;
-	int product_index;
-	int serial_index;
-	
-	/* Whether blocking reads are used */
-	int blocking; /* boolean */
-	
-	/* Read thread objects */
-	//pthread_t thread;
-	//pthread_mutex_t mutex; /* Protects input_reports */
-	//pthread_cond_t condition;
-	//pthread_barrier_t barrier; /* Ensures correct startup sequence */
-	// shutdown_thread;
-	//struct libusb_transfer *transfer;
 
-	/* List of received input reports. */
-	//struct input_report *input_reports;
-
-};
-
-
-//cause i can't be bothered removing windaz references
-typedef hid_device* HANDLE;
-
-
-
-typedef struct
-{
-	//the LIBUSB device handle
-	HANDLE device;
-
-	//store the PID, to determine which commands to use for each device type
+	//store the VID/PID, to determine which commands to use for each device type
 	//G510 or G110
 	unsigned short product_id;
-
-}GKeyboardDevice;
-
-
-
-/** hidapi info structure */
-struct hid_device_info {
-
-	/** Platform-specific device path */
-	std::string path;
-
-	/** Device Vendor ID */
 	unsigned short vendor_id;
-	/** Device Product ID */
-	unsigned short product_id;
-	
-	//std::string serial_number;
-	int interface_number;
-	
-	/** Pointer to the next device */
-	struct hid_device_info *next;
 
-	//reserved for future use
-	
-	/** Manufacturer String */
-	//wchar_t *manufacturer_string;
-	/** Product string */
-	//wchar_t *product_string;
+
+	struct GKeyboardDevice* next;
 };
+
 
 /** @brief Enumerate the HID Devices.
 
@@ -133,7 +77,7 @@ struct hid_device_info {
 		attached to the system, or NULL in the case of failure. Free
 		this linked list by calling hid_free_enumeration().
 */
-hid_device_info * hid_enumerate(unsigned short vendor_id, unsigned short product_id);
+GKeyboardDevice* hid_enumerate(unsigned short vendor_id, unsigned short product_id);
 
 /** @brief Free an enumeration Linked List
 
@@ -143,7 +87,7 @@ hid_device_info * hid_enumerate(unsigned short vendor_id, unsigned short product
 	@param devs Pointer to a list of struct_device returned from
 		    	hid_enumerate().
 */
-void hid_free_enumeration(struct hid_device_info *devs);
+void hid_free_enumeration(GKeyboardDevice *devs);
 
 /** @brief Get The Manufacturer String from a HID device.
 
@@ -153,8 +97,6 @@ void hid_free_enumeration(struct hid_device_info *devs);
 	@param maxlen The length of the buffer in multiples of wchar_t.
 */
 
-HANDLE open_device_handle(std::string path);
-
-bool NotValidHandle(HANDLE h);
+bool NotValidHandle(void* h);
 
 #endif

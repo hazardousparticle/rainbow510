@@ -37,8 +37,7 @@
 void setL510_LEDColor(GKeyboardDevice* dev, Color *c);
 Color* getL510_LEDColor(GKeyboardDevice* dev);
 
-GKeyboardDevice*  kb_device_open(unsigned short vendor_id, unsigned short product_id);
-void kb_device_close(GKeyboardDevice* kbdevice);
+GKeyboardDevice* kb_device_open(GKeyboardDevice* list, int index);
 
 #endif
 
