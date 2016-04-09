@@ -1,0 +1,8 @@
+Release/*
+Debug/*
+.settings/*
+
+*.o
+*.d
+
+rainbow510
