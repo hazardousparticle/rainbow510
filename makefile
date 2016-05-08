@@ -88,6 +88,7 @@ CPP_DEPS += \
 
 # All Target
 all: rainbow510
+	strip rainbow510
 
 # Tool invocations
 rainbow510: $(OBJS) $(USER_OBJS)
@@ -101,6 +102,10 @@ rainbow510: $(OBJS) $(USER_OBJS)
 clean:
 	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) rainbow510
 	-@echo ' '
+
+install:
+	cp rainbow510 /usr/bin/
+	cp 44-g510.rules /etc/udev/rules.d/
 
 .PHONY: all clean dependents
 .SECONDARY:
