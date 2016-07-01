@@ -14,26 +14,26 @@
 using namespace std;
 
 //delay in ms between color cycles
-#define SPEED 250
+#define SPEED 500
 
 volatile bool PissOff_signal = true;
 //will skip loop unless told not to
 //Signal ,loop to quit
 void signal_handler(int signum)
 {
-	PissOff_signal = true;
+    PissOff_signal = true;
 }
 
 
 int main(int argc, char* argv[])
 {
-	libusb_init(NULL);
+    libusb_init(NULL);
 
-	GKeyboardDevice *devs = hid_enumerate(DEVICE_G510_VID, DEVICE_G510_PID);
+    GKeyboardDevice *devs = hid_enumerate(DEVICE_G510_VID, DEVICE_G510_PID);
 
     GKeyboardDevice *devToUse = kb_device_open(devs, 0); //use the first device
 
-    if (NotValidHandle(devToUse))//check if g510 found
+    if (NotValidHandle(devToUse)) //check if g510 found
     {
         cout << "Error accessing G510 keyboard." << endl;
 
@@ -61,11 +61,11 @@ int main(int argc, char* argv[])
         else
         {
             cout << "TODO: modify LOGI_510_COLOR_CHANGE_CMD according to G110" << endl;
-				cout << "G110 device found but not supported" << endl;
-			hid_free_enumeration(devs);
+                cout << "G110 device found but not supported" << endl;
+            hid_free_enumeration(devs);
 
-			devs = NULL;
-			return 0;
+            devs = NULL;
+            return 0;
         }
 
     }
@@ -81,13 +81,13 @@ int main(int argc, char* argv[])
 
     printf("Read LED color: red=%02X, green=%02X, blue=%02X\r\n", r, g, b);
 
-
-    if (argc == 5 &&  !strncmp(argv[1], "write", 5))
+    //write the color
+    if (argc == 4)
     {
-        //4 args command: $0 write $2 $3 $4
+        //4 args command: $0 r g b
         //set rgb color of the keyboard
 
-    	auto StrToUint8 = [](const char * str) -> unsigned char
+        auto StrToUint8 = [](const char * str) -> unsigned char
         {
             char * bad_chars;
 
@@ -111,9 +111,9 @@ int main(int argc, char* argv[])
             return (unsigned char) l;
         };
 
-        r = StrToUint8(argv[2]);
-        g = StrToUint8(argv[3]);
-        b = StrToUint8(argv[4]);
+        r = StrToUint8(argv[1]);
+        g = StrToUint8(argv[2]);
+        b = StrToUint8(argv[3]);
 
         delete c;
         c = new Color(r,g,b);
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
     else if (argc == 2 && !strncmp(argv[1], "rainbow", 7) )
     {
         //do rainbow loop until ctrl+c
-    	PissOff_signal = false;
+        PissOff_signal = false;
         //quit signal
         signal(SIGINT, signal_handler);
         signal(SIGHUP, signal_handler);
