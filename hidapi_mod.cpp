@@ -96,4 +96,5 @@ void hid_free_enumeration(GKeyboardDevice *devs)
 		delete d;
 		d = next;
 	}
+	devs = NULL;
 }

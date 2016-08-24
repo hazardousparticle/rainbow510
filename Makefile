@@ -20,6 +20,7 @@ CXX_DEPS :=
 OBJS := 
 CPP_DEPS := 
 C_DEPS := 
+CC_FLAGS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
@@ -80,21 +81,17 @@ CPP_DEPS += \
 %.o: ./%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -std=c++0x -I"./inc" -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ $(CC_FLAGS) -std=c++0x -I"./inc" -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
-# All Target
-all: rainbow510
-	strip rainbow510
-
 # Tool invocations
 rainbow510: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/usr/lib/x86_64-linux-gnu/ -o "rainbow510" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ $(CC_FLAGS) -L/usr/lib/x86_64-linux-gnu/ -o "rainbow510" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -104,6 +101,7 @@ clean:
 	-@echo ' '
 
 install:
+	strip rainbow510
 	cp rainbow510 /usr/bin/
 	cp 44-g510.rules /etc/udev/rules.d/
 

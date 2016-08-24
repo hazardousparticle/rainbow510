@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
         if (NotValidHandle(devToUse))
         {
             cout << "No G110 keyboard found." << endl;
-
+            hid_free_enumeration(devs);
             return 0;
         }
         else
@@ -63,13 +63,10 @@ int main(int argc, char* argv[])
             cout << "TODO: modify LOGI_510_COLOR_CHANGE_CMD according to G110" << endl;
                 cout << "G110 device found but not supported" << endl;
             hid_free_enumeration(devs);
-
-            devs = NULL;
             return 0;
         }
 
     }
-
     //no options means read color
 
     Color *c = getL510_LEDColor(devToUse);
@@ -152,6 +149,11 @@ int main(int argc, char* argv[])
     }
 
     //free the pointers
+    if (devs)
+    {
+        hid_free_enumeration(devs);
+    }
+
     delete c;
     c = nullptr;
     
