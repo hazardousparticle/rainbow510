@@ -14,13 +14,15 @@ O_SRCS :=
 S_UPPER_SRCS := 
 CC_DEPS := 
 C++_DEPS := 
-EXECUTABLES := 
+EXECUTABLES := rainbow510
 C_UPPER_DEPS := 
 CXX_DEPS := 
 OBJS := 
 CPP_DEPS := 
 C_DEPS := 
 CC_FLAGS :=
+CC_PREFIX :=
+CC_INC_DIRS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
@@ -76,12 +78,15 @@ CPP_DEPS += \
 ./hidapi_mod.d \
 ./main.d 
 
+CC_INC_DIRS += \
+-I"./inc"
+
 
 # Each subdirectory must supply rules for building sources it contributes
 %.o: ./%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ $(CC_FLAGS) -std=c++0x -I"./inc" -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	$(CC_PREFIX)g++ $(CC_FLAGS) -std=c++0x  $(CC_INC_DIRS) -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -91,18 +96,19 @@ CPP_DEPS += \
 rainbow510: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ $(CC_FLAGS) -L/usr/lib/x86_64-linux-gnu/ -o "rainbow510" $(OBJS) $(USER_OBJS) $(LIBS)
+#$(CC_PREFIX)g++ $(CC_FLAGS) -L/usr/lib/x86_64-linux-gnu/ -o "$(EXECUTABLES)" $(OBJS) $(USER_OBJS) $(LIBS)
+	$(CC_PREFIX)g++ $(CC_FLAGS) -o "$(EXECUTABLES)" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) rainbow510
+	-$(RM) $(CC_DEPS) $(C++_DEPS) $(EXECUTABLES) $(C_UPPER_DEPS) $(CXX_DEPS) $(OBJS) $(CPP_DEPS) $(C_DEPS) 
 	-@echo ' '
 
 install:
-	strip rainbow510
-	cp rainbow510 /usr/bin/
+	strip $(EXECUTABLES)
+	cp $(EXECUTABLES) /usr/bin/
 	cp 44-g510.rules /etc/udev/rules.d/
 
 .PHONY: all clean dependents
