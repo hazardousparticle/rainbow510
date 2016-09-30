@@ -84,21 +84,20 @@ CC_INC_DIRS += \
 
 # Each subdirectory must supply rules for building sources it contributes
 %.o: ./%.cpp
-	@echo 'Building file: $<'
+	@echo -e '\e[34mBuilding file: $<\e[0m'
 	@echo 'Invoking: GCC C++ Compiler'
-	$(CC_PREFIX)g++ $(CC_FLAGS) -std=c++0x  $(CC_INC_DIRS) -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
-	@echo 'Finished building: $<'
+	$(CC_PREFIX)g++ $(CC_FLAGS) -std=c++0x  $(CC_INC_DIRS) -O2 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	@echo -e '\e[92mFinished building: $<\e[0m'
 	@echo ' '
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # Tool invocations
 rainbow510: $(OBJS) $(USER_OBJS)
-	@echo 'Building target: $@'
+	@echo -e '\e[35mBuilding target: $@\e[0m'
 	@echo 'Invoking: GCC C++ Linker'
-#$(CC_PREFIX)g++ $(CC_FLAGS) -L/usr/lib/x86_64-linux-gnu/ -o "$(EXECUTABLES)" $(OBJS) $(USER_OBJS) $(LIBS)
 	$(CC_PREFIX)g++ $(CC_FLAGS) -o "$(EXECUTABLES)" $(OBJS) $(USER_OBJS) $(LIBS)
-	@echo 'Finished building target: $@'
+	@echo -e '\e[92mFinished building target: $@\e[0m'
 	@echo ' '
 
 # Other Targets
