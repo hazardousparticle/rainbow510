@@ -1,3 +1,5 @@
+/* Original version based on Hidapi, this file has been largely rewritten form scratch*/
+
 /*******************************************************
  HIDAPI - Multi-Platform library for
  communication with HID devices.

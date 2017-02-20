@@ -16,12 +16,12 @@ using namespace std;
 //delay in ms between color cycles
 #define SPEED 500
 
-volatile bool PissOff_signal = true;
+volatile bool Terminate_signal = true;
 //will skip loop unless told not to
 //Signal ,loop to quit
 void signal_handler(int signum)
 {
-    PissOff_signal = true;
+    Terminate_signal = true;
 }
 
 
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     else if (argc == 2 && !strncmp(argv[1], "rainbow", 7) )
     {
         //do rainbow loop until ctrl+c
-        PissOff_signal = false;
+        Terminate_signal = false;
         //quit signal
         signal(SIGINT, signal_handler);
         signal(SIGHUP, signal_handler);
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
         Color rainbow = Color();
         HsvColor hsv = HsvColor();
 
-        while (!PissOff_signal)
+        while (!Terminate_signal)
         {
             //TODO: detect disconnection of the device
             rainbow = Color::RGBFromHSV(&hsv);
