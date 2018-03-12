@@ -1,3 +1,5 @@
+/*Originally based on hidapi, only thing that remains are a few comments and function names*/
+
 /*******************************************************
  HIDAPI - Multi-Platform library for
  communication with HID devices.
