@@ -20,10 +20,6 @@
         http://github.com/signal11/hidapi .
 ********************************************************/
 
-/** @file
- * @defgroup API hidapi API
- */
-
 #pragma once
 
 #ifndef HIDAPI_H__
@@ -62,8 +58,6 @@ struct GKeyboardDevice
 
 	This function returns a linked list of all the HID devices
 	attached to the system which match vendor_id and product_id.
-	If @p vendor_id and @p product_id are both set to 0, then
-	all HID devices will be returned.
 
 	@ingroup API
 	@param vendor_id The Vendor ID (VID) of the types of device
@@ -89,14 +83,7 @@ GKeyboardDevice* hid_enumerate(unsigned short vendor_id, unsigned short product_
 */
 void hid_free_enumeration(GKeyboardDevice *devs);
 
-/** @brief Get The Manufacturer String from a HID device.
-
-	@ingroup API
-	@param device A device handle returned from hid_open().
-	@param string A wide string buffer to put the data into.
-	@param maxlen The length of the buffer in multiples of wchar_t.
-*/
-
+// check for valid pointer
 bool NotValidHandle(void* h);
 
 #endif
