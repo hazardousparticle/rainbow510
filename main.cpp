@@ -27,7 +27,9 @@ void signal_handler(int signum)
 
 int main(int argc, char* argv[])
 {
-    libusb_init(NULL);
+    libusb_context *ctx = nullptr;
+
+    libusb_init(&ctx);
 
     GKeyboardDevice *devs = hid_enumerate(DEVICE_G510_VID, DEVICE_G510_PID);
 
@@ -122,10 +124,14 @@ int main(int argc, char* argv[])
     {
         //do rainbow loop until ctrl+c
         Terminate_signal = false;
-        //quit signal
-        signal(SIGINT, signal_handler);
-        signal(SIGHUP, signal_handler);
-        signal(SIGTERM, signal_handler);
+
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(struct sigaction));
+        sa.sa_handler = signal_handler;
+        sigaction(SIGINT,&sa,NULL);
+        sigaction(SIGHUP,&sa,NULL);
+        sigaction(SIGTERM,&sa,NULL);
+        sigaction(SIGQUIT,&sa,NULL);
 
         Color rainbow = Color();
         HsvColor hsv = HsvColor();
@@ -156,8 +162,9 @@ int main(int argc, char* argv[])
 
     delete c;
     c = nullptr;
-    
-    libusb_exit(NULL);
+
+    libusb_exit(ctx);
+
     return 0;
 }
 
